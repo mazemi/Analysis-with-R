@@ -69,6 +69,7 @@ summarize_select_multiple <- function(data, prefix, disaggregation_var = NULL) {
   
   for (col in columns) {
     
+    # Asumming "." character is the seperator
     suffix  <- sub(".*\\.", "", col)
     
     data_clean <- data %>%
