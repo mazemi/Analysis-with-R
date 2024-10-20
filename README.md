@@ -1,6 +1,6 @@
 # Core Analysis Functions
 
-This repository contains core R functions for data analysis and processing.
+This repository contains core R functions for KOBO data analysis and producing summaries.
 
 ## Files
 
@@ -14,10 +14,5 @@ To use the scripts in this repository, you will need:
 - R version 4.0 or higher
 - The following R packages:
   - `dplyr`
-  - `ggplot2`
-  - (list any other relevant packages)
-
-## Usage
-
-see analyze.R
+  - `rlang`
 
