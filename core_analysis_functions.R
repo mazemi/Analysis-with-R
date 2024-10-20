@@ -69,7 +69,7 @@ summarize_select_multiple <- function(data, prefix, disaggregation_var = NULL) {
   
   for (col in columns) {
     
-    # Asumming "." character is the seperator
+    # Assuming "." character is the separator
     suffix  <- sub(".*\\.", "", col)
     
     data_clean <- data %>%
@@ -102,7 +102,7 @@ summarize_select_multiple <- function(data, prefix, disaggregation_var = NULL) {
 }
 
 # Function for numeric variables (mean calculation)
-summarize_numeric <- function(data, numeric_var, disaggregation_var = NULL) {
+summarize_mean <- function(data, numeric_var, disaggregation_var = NULL) {
   data_filtered <- data %>%
     filter(!is.na(!!sym(numeric_var)))
   
@@ -121,6 +121,25 @@ summarize_numeric <- function(data, numeric_var, disaggregation_var = NULL) {
   return(result)
 }
 
+summarize_median <- function(data, numeric_var, disaggregation_var = NULL) {
+  data_filtered <- data %>%
+    filter(!is.na(!!sym(numeric_var)))
+  
+  result <- data_filtered %>%
+    apply_grouping(disaggregation_var) %>%
+    summarise(
+      group_var = disaggregation_var,
+      analysis_var = numeric_var,
+      stat = round(median(!!sym(numeric_var), na.rm = TRUE), 2),
+      n = n(),
+      analysis_type = "median",
+      .groups = 'drop'  
+    ) %>%
+    select(any_of(c("group_var", "group_var_value", "analysis_var", "stat", "n", "analysis_type")))
+  
+  return(result)
+}
+
 # Main analysis function
 analyse_data <- function(data, param_data, disaggregations) {
   results <- list() 
@@ -128,8 +147,9 @@ analyse_data <- function(data, param_data, disaggregations) {
   # Loop through each variable in the parameter data
   for (i in 1:nrow(param_data)) {
     variable <- param_data$variable[i]
-    cat("proccessing: ", variable, "\n")
     type <- param_data$type[i]
+    
+    cat("proccessing:", variable, "\n")
     
     # Loop through each disaggregation level
     for (disaggregation in disaggregations) {
@@ -139,7 +159,9 @@ analyse_data <- function(data, param_data, disaggregations) {
         } else if (type == "select_multiple") {
           result <- summarize_select_multiple(data, variable, disaggregation)
         } else if (type == "integer" || type == "decimal") {
-          result <- summarize_numeric(data, variable, disaggregation)
+          res1 <- summarize_mean(data, variable, disaggregation)
+          res2 <- summarize_median(data, variable, disaggregation)
+          result <- bind_rows(res1, res2)
         }
       }
       
@@ -148,7 +170,9 @@ analyse_data <- function(data, param_data, disaggregations) {
       } else if (type == "select_multiple") {
         result <- summarize_select_multiple(data, variable, disaggregation)
       } else if (type == "integer" || type == "decimal") {
-        result <- summarize_numeric(data, variable, disaggregation)
+        res1 <- summarize_mean(data, variable, disaggregation)
+        res2 <- summarize_median(data, variable, disaggregation)
+        result <- bind_rows(res1, res2)
       }
       
       # Store result in the list, ensuring unique names for each combination
@@ -162,6 +186,9 @@ analyse_data <- function(data, param_data, disaggregations) {
   final_result <- bind_rows(results)
   col_list <- c("group_var", "group_var_value", "analysis_var", "analysis_var_value", "stat", "n", "n_total", "analysis_type")
   final_result <- final_result %>% select(any_of(col_list))
+  
+  final_result$group_var <- ifelse(is.na(final_result$group_var), "No_Disaggregation", final_result$group_var)
+  
   cat("proccessing finished.    ", "\n")
   return(final_result)
 }
