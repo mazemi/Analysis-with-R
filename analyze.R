@@ -6,8 +6,10 @@ library(openxlsx)
 
 source("./R/core_analysis_functions.R")
 
-# loading clean data set and list of desired variables for analysis
+# loading clean data set
 main_data <- read.xlsx("./input/Shelter_MARKET_ASSESSMENT_clean_data.xlsx")
+
+# loading list of desired variables for analysis (mean, median and proportion)
 param_data <- read.xlsx("./input/variables.xlsx") 
 
 # NA in the disaggregations vector is for national/overall analysis
