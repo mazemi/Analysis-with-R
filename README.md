@@ -1,6 +1,6 @@
 # Core Analysis Functions
 
-This repository contains core R functions for KOBO data analysis and producing summaries.
+This is a core R functions for KOBO data analysis and producing summaries.
 The dataset headers should not include group names, and group separators should be dot.
 
 ## Files
